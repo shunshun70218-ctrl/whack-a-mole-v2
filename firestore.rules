@@ -1,0 +1,33 @@
+// === Firestore Security Rules（複製到 Firebase Console → Firestore → 規則）===
+//
+// 設計原則：
+// - scores 任何人可以讀（排行榜公開）
+// - scores 任何人可以新增（玩遊戲就上傳），但有欄位與長度檢查
+// - 不允許更新、刪除（避免有人偷改別人的分數）
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /scores/{doc} {
+      allow read: if true;
+
+      allow create: if
+        request.resource.data.keys().hasOnly(['className', 'studentId', 'emoji', 'score', 'difficulty', 'createdAt'])
+        && request.resource.data.className is string
+        && request.resource.data.className.size() > 0
+        && request.resource.data.className.size() <= 20
+        && request.resource.data.studentId is string
+        && request.resource.data.studentId.size() > 0
+        && request.resource.data.studentId.size() <= 20
+        && request.resource.data.emoji is string
+        && request.resource.data.emoji.size() <= 8
+        && request.resource.data.score is int
+        && request.resource.data.score >= 0
+        && request.resource.data.score <= 999
+        && request.resource.data.difficulty in ['easy', 'normal', 'hard']
+        && request.resource.data.createdAt == request.time;
+
+      allow update, delete: if false;
+    }
+  }
+}

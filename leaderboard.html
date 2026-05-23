@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>🏆 排行榜 · 打地鼠 v2</title>
+<style>
+  :root {
+    --accent: #ff9c1c;
+    --gold: #ffd400;
+    --silver: #c0c0c0;
+    --bronze: #cd7f32;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+    background: linear-gradient(180deg, #88d8ff 0%, #c7eaff 35%, #b9e08c 60%, #6cae4f 100%);
+    margin: 0;
+    min-height: 100vh;
+    color: #2a2a2a;
+    padding: 1.2rem 1rem 3rem;
+  }
+  header {
+    max-width: 720px;
+    margin: 0 auto 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  h1 {
+    margin: 0;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 0 rgba(255,255,255,0.6);
+  }
+  .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  button, .btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-weight: 700;
+    box-shadow: 0 4px 0 #c47215;
+    transition: transform .1s, box-shadow .1s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  button:hover, .btn:hover { transform: translateY(-1px); }
+  button:active, .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #c47215; }
+  .btn.secondary {
+    background: white;
+    color: #2a4a1a;
+    box-shadow: 0 4px 0 #b3c5a0;
+  }
+  .btn.secondary:active { box-shadow: 0 2px 0 #b3c5a0; }
+
+  .filters {
+    max-width: 720px;
+    margin: 0 auto 0.8rem;
+    background: white;
+    padding: 0.7rem 1rem;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .filters label { font-size: 0.85rem; color: #57606a; font-weight: 600; }
+  .filters select, .filters input {
+    padding: 0.4rem 0.7rem;
+    border: 2px solid #d0d7de;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: #fafbfc;
+    min-width: 0;
+  }
+  .filters select:focus, .filters input:focus { outline: none; border-color: var(--accent); background: white; }
+
+  .table-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th, td {
+    padding: 0.7rem 0.8rem;
+    text-align: left;
+    border-bottom: 1px solid #eaeef2;
+  }
+  th {
+    background: #f6f8fa;
+    font-size: 0.82rem;
+    color: #57606a;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr.me { background: linear-gradient(90deg, rgba(255,156,28,0.12), transparent); }
+
+  .rank {
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: #6e7681;
+    width: 56px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .rank-1 { color: #b8860b; }
+  .rank-2 { color: #6c757d; }
+  .rank-3 { color: var(--bronze); }
+  .medal { font-size: 1.3rem; }
+
+  .emoji-cell {
+    font-size: 2rem;
+    width: 60px;
+    text-align: center;
+    line-height: 1;
+  }
+
+  .id-cell { font-weight: 700; font-size: 1rem; }
+  .id-cell .class { display: block; font-size: 0.75rem; color: #6e7681; font-weight: 500; margin-top: 0.15rem; }
+
+  .score-cell {
+    font-weight: 900;
+    font-size: 1.3rem;
+    color: var(--accent);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    width: 90px;
+  }
+  .diff-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: #f0f6fc;
+    color: #0969da;
+    font-weight: 600;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+  }
+  .diff-badge.easy   { background: #dcffe4; color: #1a7f37; }
+  .diff-badge.normal { background: #f0f6fc; color: #0969da; }
+  .diff-badge.hard   { background: #ffebe9; color: #cf222e; }
+
+  .empty, .loading {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6e7681;
+    font-size: 1rem;
+  }
+  .err {
+    background: #ffebe9;
+    color: #cf222e;
+    padding: 1rem;
+    border-radius: 10px;
+    margin: 1rem auto;
+    max-width: 720px;
+    font-size: 0.9rem;
+  }
+  footer { text-align: center; margin-top: 2rem; color: #2a4a1a; font-size: 0.85rem; opacity: 0.85; }
+
+  @media (max-width: 480px) {
+    .emoji-cell { font-size: 1.6rem; width: 44px; }
+    .score-cell { font-size: 1.1rem; width: 70px; }
+    th, td { padding: 0.55rem 0.5rem; }
+    .rank { width: 40px; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>🏆 排行榜</h1>
+    <div class="actions">
+      <a href="index.html" class="btn">🎯 回去玩</a>
+      <button id="refresh" class="btn secondary">🔄 重新整理</button>
+    </div>
+  </header>
+
+  <div class="filters">
+    <label>難度</label>
+    <select id="filter-diff">
+      <option value="all">全部</option>
+      <option value="easy">😌 簡單</option>
+      <option value="normal">🙂 普通</option>
+      <option value="hard">😈 困難</option>
+    </select>
+    <label>班級</label>
+    <select id="filter-class"><option value="all">全部</option></select>
+    <label>顯示</label>
+    <select id="filter-top">
+      <option value="50">前 50</option>
+      <option value="100">前 100</option>
+      <option value="200">前 200</option>
+    </select>
+  </div>
+
+  <div id="content">
+    <div class="loading">⏳ 載入排行榜中…</div>
+  </div>
+
+  <footer>分數依「Score 高 → 時間早」排序</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import { getFirestore, collection, query, orderBy, limit, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+import { firebaseConfig, SCORES_COLLECTION } from "./firebase-config.js";
+
+const content = document.getElementById('content');
+const filterDiff  = document.getElementById('filter-diff');
+const filterClass = document.getElementById('filter-class');
+const filterTop   = document.getElementById('filter-top');
+
+if (!firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("PASTE_")) {
+  content.innerHTML = `<div class="err">⚠️ Firebase 尚未設定。請編輯 <code>firebase-config.js</code>，把 Firebase Console 的 config 貼進去。</div>`;
+  throw new Error("Firebase not configured");
+}
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+const me = JSON.parse(localStorage.getItem('whack_v2_player') || 'null');
+
+let allDocs = [];
+
+const DIFF_LABEL = { easy: '😌 簡單', normal: '🙂 普通', hard: '😈 困難' };
+
+async function load() {
+  content.innerHTML = `<div class="loading">⏳ 載入排行榜中…</div>`;
+  try {
+    const top = +filterTop.value || 50;
+    // 多抓一些以便前端做難度/班級篩選
+    const q = query(collection(db, SCORES_COLLECTION), orderBy('score', 'desc'), orderBy('createdAt', 'asc'), limit(top * 5));
+    const snap = await getDocs(q);
+    allDocs = [];
+    snap.forEach(doc => allDocs.push({ id: doc.id, ...doc.data() }));
+    // 收集班級到 dropdown
+    const classes = [...new Set(allDocs.map(d => d.className).filter(Boolean))].sort();
+    const cur = filterClass.value;
+    filterClass.innerHTML = '<option value="all">全部</option>' +
+      classes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    if (classes.includes(cur)) filterClass.value = cur;
+    render();
+  } catch (e) {
+    console.error(e);
+    content.innerHTML = `<div class="err">❌ 讀取失敗：${escapeHtml(e.message || e.code || '未知錯誤')}<br><small>如果是 permission-denied，請檢查 Firestore Security Rules。</small></div>`;
+  }
+}
+
+function render() {
+  const diff = filterDiff.value;
+  const cls  = filterClass.value;
+  const top  = +filterTop.value || 50;
+  let rows = allDocs.slice();
+  if (diff !== 'all') rows = rows.filter(r => r.difficulty === diff);
+  if (cls  !== 'all') rows = rows.filter(r => r.className === cls);
+  rows = rows.slice(0, top);
+
+  if (rows.length === 0) {
+    content.innerHTML = `<div class="empty">這個篩選條件下還沒有分數～<br>去玩一場吧！</div>`;
+    return;
+  }
+
+  const trs = rows.map((r, i) => {
+    const rank = i + 1;
+    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+    const isMe = me && r.studentId === me.studentId && r.className === me.className;
+    const diffCls = r.difficulty || 'normal';
+    return `
+      <tr class="${isMe ? 'me' : ''}">
+        <td class="rank rank-${rank}">${medal ? `<span class="medal">${medal}</span>` : rank}</td>
+        <td class="emoji-cell">${escapeHtml(r.emoji || '🎯')}</td>
+        <td class="id-cell">
+          ${escapeHtml(r.studentId || '?')}
+          ${isMe ? ' <span style="color:var(--accent);font-size:0.75rem;">(你)</span>' : ''}
+          <span class="class">${escapeHtml(r.className || '')}</span>
+        </td>
+        <td class="score-cell">${r.score ?? 0}<span class="diff-badge ${diffCls}">${DIFF_LABEL[diffCls] || diffCls}</span></td>
+      </tr>
+    `;
+  }).join('');
+
+  content.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="rank">#</th>
+            <th>頭像</th>
+            <th>學號</th>
+            <th style="text-align:right;">分數</th>
+          </tr>
+        </thead>
+        <tbody>${trs}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+filterDiff.addEventListener('change', render);
+filterClass.addEventListener('change', render);
+filterTop.addEventListener('change', load);
+document.getElementById('refresh').addEventListener('click', load);
+
+load();
+</script>
+</body>
+</html>
