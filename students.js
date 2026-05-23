@@ -14,7 +14,7 @@ export const STUDENT_PHOTOS = {
   '25': 'face-04.jpg',
   '26': 'face-13.jpg',
   '27': 'face-14.jpg',
-  '老師': 'face-01.jpg',
+  '0':  'face-01.jpg', // 老師
 };
 
 export function photoForStudent(studentId) {

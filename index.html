@@ -351,6 +351,36 @@
   }
   .gate-actions button { margin-top: 0; }
 
+  .diff-row {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 0.2rem 0 0.4rem;
+  }
+  .diff-btn {
+    background: #f0f0f0;
+    color: #57606a;
+    border: 2px solid #d8dde3;
+    border-radius: 999px;
+    padding: 0.4rem 0.95rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: none;
+    margin-top: 0;
+    transition: all .12s;
+  }
+  .diff-btn:hover { transform: none; background: #e8e8e8; }
+  .diff-btn:active { transform: none; box-shadow: none; }
+  .diff-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: 0 3px 0 #c47215;
+  }
+  .chip.diff .val { color: #0969da; font-size: 0.9rem; }
+
   .upload-status {
     font-size: 0.82rem;
     color: #6e7681;
@@ -516,6 +546,7 @@
     <div class="chip time"><span class="label">剩餘</span><span class="val" id="time">30</span><span style="font-size:0.8rem;color:#57606a;">秒</span></div>
     <div class="chip best"><span class="label">最高</span><span class="val" id="best">0</span></div>
     <div class="chip"><span class="label">連擊</span><span class="val" id="combo" style="color:#0969da;">0</span></div>
+    <div class="chip diff"><span class="label">難度</span><span class="val" id="diff-chip">普通</span></div>
   </div>
 
   <div class="board" id="board"></div>
@@ -528,14 +559,20 @@
     <a href="leaderboard.html" class="link-btn">🏆 排行版</a>
   </div>
 
-  <!-- Gate：開始遊戲時跳出，要求輸入學號 -->
+  <!-- Gate：開始遊戲時跳出，要求輸入學號 + 選難度 -->
   <div class="overlay hidden" id="gate-screen">
     <div class="card">
       <h2>請輸入學號</h2>
       <div class="row">輸入後就開始 30 秒挑戰</div>
-      <div class="gate-hint">學號（例如：15）</div>
+      <div class="gate-hint">學號（例如：15　|　老師：0）</div>
       <input class="gate-input" id="in-student" type="text" inputmode="numeric"
              placeholder="例如：15" maxlength="20" autocomplete="off">
+      <div class="gate-hint">選擇難度</div>
+      <div class="diff-row" id="diff-row-gate">
+        <button class="diff-btn" data-diff="easy" type="button">😌 簡單</button>
+        <button class="diff-btn active" data-diff="normal" type="button">🙂 普通</button>
+        <button class="diff-btn" data-diff="hard" type="button">😈 困難</button>
+      </div>
       <div class="gate-err" id="gate-err"></div>
       <div class="gate-actions">
         <button id="gate-cancel" class="secondary">取消</button>
@@ -673,6 +710,16 @@ function pickEmoji(studentId) {
 // === DOM helpers ===
 const $ = id => document.getElementById(id);
 
+// === 三段難度設定 ===
+const DIFFICULTIES = {
+  easy:   { label: '😌 簡單', minInt: 500, maxInt: 1100, minLife: 900, maxLife: 1400, maxConc: 1 },
+  normal: { label: '🙂 普通', minInt: 320, maxInt: 850,  minLife: 600, maxLife: 1100, maxConc: 2 },
+  hard:   { label: '😈 困難', minInt: 220, maxInt: 600,  minLife: 420, maxLife: 800,  maxConc: 3 },
+};
+let difficulty = localStorage.getItem('whack_v2_diff') || 'normal';
+if (!DIFFICULTIES[difficulty]) difficulty = 'normal';
+let D = DIFFICULTIES[difficulty];
+
 // === Player state（學號）===
 let player = JSON.parse(localStorage.getItem('whack_v2_player') || 'null');
 
@@ -683,11 +730,31 @@ function applyPlayerUI() {
 }
 applyPlayerUI();
 
+// === 難度按鈕同步 ===
+function applyDiffUI() {
+  $('diff-chip').textContent = D.label;
+  document.querySelectorAll('.diff-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.diff === difficulty);
+  });
+}
+function setDifficulty(d) {
+  if (!DIFFICULTIES[d]) return;
+  difficulty = d;
+  D = DIFFICULTIES[d];
+  localStorage.setItem('whack_v2_diff', d);
+  applyDiffUI();
+}
+document.querySelectorAll('.diff-btn').forEach(b => {
+  b.addEventListener('click', () => setDifficulty(b.dataset.diff));
+});
+applyDiffUI();
+
 // === Gate ===
 function openGate() {
   $('gate-err').textContent = '';
   $('in-student').value = player ? player.studentId : '';
   $('gate-screen').classList.remove('hidden');
+  applyDiffUI();
   setTimeout(() => { $('in-student').focus(); $('in-student').select(); }, 50);
 }
 function closeGate() { $('gate-screen').classList.add('hidden'); }
@@ -711,9 +778,6 @@ $('in-student').addEventListener('keydown', (e) => {
 // ========== 遊戲核心邏輯（沿用 v1） ==========
 const HOLES = 9;
 const ROUND_MS = 30000;
-const MIN_INTERVAL = 320, MAX_INTERVAL = 850;
-const MIN_LIFETIME = 600, MAX_LIFETIME = 1100;
-const MAX_CONCURRENT = 2;
 
 const board = $('board');
 
@@ -845,16 +909,16 @@ function stopBgm() { if (bgmTimer) { clearTimeout(bgmTimer); bgmTimer = null; } 
 
 function spawn() {
   if (!running) return;
-  if (active.size < MAX_CONCURRENT) {
+  if (active.size < D.maxConc) {
     const free = holes.map((_, i) => i).filter(i => !active.has(i));
     if (free.length) {
       const idx = free[Math.floor(Math.random() * free.length)];
       const elapsed = (ROUND_MS - (endAt - performance.now())) / ROUND_MS;
-      const life = Math.max(MIN_LIFETIME, MAX_LIFETIME - elapsed * 500);
+      const life = Math.max(D.minLife, D.maxLife - elapsed * (D.maxLife - D.minLife) * 0.5);
       showMole(idx, life);
     }
   }
-  const interval = MIN_INTERVAL + Math.random() * (MAX_INTERVAL - MIN_INTERVAL);
+  const interval = D.minInt + Math.random() * (D.maxInt - D.minInt);
   spawnTimer = setTimeout(spawn, interval);
 }
 
@@ -949,7 +1013,7 @@ async function uploadScore() {
       studentId: player.studentId,
       emoji: pickEmoji(player.studentId),
       score,
-      difficulty: 'normal',
+      difficulty,
       createdAt: serverTimestamp(),
     });
     statusEl.textContent = '✅ 分數已上傳到排行榜';

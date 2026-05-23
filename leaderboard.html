@@ -289,11 +289,9 @@ function render() {
     const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
     const isMe = me && r.studentId === me.studentId;
     const diffCls = r.difficulty || 'normal';
-    // 頭像優先用學號對應的小美女照片，沒對應就 fallback 用 emoji
-    const photo = photoForStudent(r.studentId);
-    const avatar = photo
-      ? `<img class="face-photo" src="${escapeHtml(photo)}" alt="${escapeHtml(r.studentId)}" loading="lazy">`
-      : escapeHtml(r.emoji || pickEmoji(r.studentId));
+    // 頭像優先用學號對應的小美女照片，沒對應就 fallback 用財犬圖示
+    const photo = photoForStudent(r.studentId) || 'face-default.svg';
+    const avatar = `<img class="face-photo" src="${escapeHtml(photo)}" alt="${escapeHtml(r.studentId || '?')}" loading="lazy">`;
     return `
       <tr class="${isMe ? 'me' : ''}">
         <td class="rank rank-${rank}">${medal ? `<span class="medal">${medal}</span>` : rank}</td>
