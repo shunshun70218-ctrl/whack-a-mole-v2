@@ -123,9 +123,19 @@
 
   .emoji-cell {
     font-size: 2rem;
-    width: 60px;
+    width: 64px;
     text-align: center;
     line-height: 1;
+  }
+  .face-photo {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    display: block;
+    margin: 0 auto;
   }
 
   .id-cell { font-weight: 700; font-size: 1rem; }
@@ -214,6 +224,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/fireba
 import { getFirestore, collection, query, orderBy, limit, getDocs }
   from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { firebaseConfig, SCORES_COLLECTION } from "./firebase-config.js";
+import { photoForStudent } from "./students.js";
 
 const content = document.getElementById('content');
 const filterDiff  = document.getElementById('filter-diff');
@@ -278,12 +289,15 @@ function render() {
     const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
     const isMe = me && r.studentId === me.studentId;
     const diffCls = r.difficulty || 'normal';
-    // emoji 優先用 DB 裡的（向後相容），沒有就現場從學號 hash
-    const emoji = r.emoji || pickEmoji(r.studentId);
+    // 頭像優先用學號對應的小美女照片，沒對應就 fallback 用 emoji
+    const photo = photoForStudent(r.studentId);
+    const avatar = photo
+      ? `<img class="face-photo" src="${escapeHtml(photo)}" alt="${escapeHtml(r.studentId)}" loading="lazy">`
+      : escapeHtml(r.emoji || pickEmoji(r.studentId));
     return `
       <tr class="${isMe ? 'me' : ''}">
         <td class="rank rank-${rank}">${medal ? `<span class="medal">${medal}</span>` : rank}</td>
-        <td class="emoji-cell">${escapeHtml(emoji)}</td>
+        <td class="emoji-cell">${avatar}</td>
         <td class="id-cell">
           ${escapeHtml(r.studentId || '?')}
           ${isMe ? ' <span style="color:var(--accent);font-size:0.75rem;">(你)</span>' : ''}
