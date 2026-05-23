@@ -260,8 +260,8 @@ async function load() {
   content.innerHTML = `<div class="loading">⏳ 載入排行榜中…</div>`;
   try {
     const top = +filterTop.value || 50;
-    // 多抓一些以便前端做難度篩選
-    const q = query(collection(db, SCORES_COLLECTION), orderBy('score', 'desc'), orderBy('createdAt', 'asc'), limit(top * 5));
+    // 多抓一些以便前端做難度篩選 + 同學號去重
+    const q = query(collection(db, SCORES_COLLECTION), orderBy('score', 'desc'), orderBy('createdAt', 'asc'), limit(top * 10));
     const snap = await getDocs(q);
     allDocs = [];
     snap.forEach(doc => allDocs.push({ id: doc.id, ...doc.data() }));
@@ -277,6 +277,28 @@ function render() {
   const top  = +filterTop.value || 50;
   let rows = allDocs.slice();
   if (diff !== 'all') rows = rows.filter(r => r.difficulty === diff);
+
+  // 同學號只保留最高分（同分則保留時間最早的）
+  const bestByStudent = new Map();
+  for (const r of rows) {
+    const key = r.studentId;
+    if (!key) continue;
+    const prev = bestByStudent.get(key);
+    if (!prev) { bestByStudent.set(key, r); continue; }
+    if (r.score > prev.score) bestByStudent.set(key, r);
+    else if (r.score === prev.score) {
+      const tNew = r.createdAt?.seconds ?? Number.MAX_SAFE_INTEGER;
+      const tOld = prev.createdAt?.seconds ?? Number.MAX_SAFE_INTEGER;
+      if (tNew < tOld) bestByStudent.set(key, r);
+    }
+  }
+  rows = [...bestByStudent.values()];
+  rows.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    const ta = a.createdAt?.seconds ?? Number.MAX_SAFE_INTEGER;
+    const tb = b.createdAt?.seconds ?? Number.MAX_SAFE_INTEGER;
+    return ta - tb;
+  });
   rows = rows.slice(0, top);
 
   if (rows.length === 0) {

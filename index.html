@@ -62,7 +62,36 @@
   .chip .val { color: #d04317; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
   .chip.time .val { color: #2da44e; }
   .chip.best .val { color: #8957e5; }
-  .chip.who .val { color: #1f6feb; font-size: 0.95rem; }
+  .chip.who .val { color: #1f6feb; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.3rem; }
+  .chip-photo {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent);
+    vertical-align: middle;
+  }
+  .end-photo {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--accent);
+    margin: 0.3rem auto 0.4rem;
+    display: block;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  }
+  .diff-row-main {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 0 0 0.7rem;
+    align-items: center;
+  }
+  .diff-row-main .diff-row-label {
+    font-size: 0.78rem; color: #2a4a1a; font-weight: 700;
+    background: white; padding: 0.35rem 0.7rem; border-radius: 999px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  }
 
   .board {
     width: min(480px, 94vw);
@@ -549,6 +578,13 @@
     <div class="chip diff"><span class="label">難度</span><span class="val" id="diff-chip">普通</span></div>
   </div>
 
+  <div class="diff-row-main">
+    <span class="diff-row-label">難度：</span>
+    <button class="diff-btn" data-diff="easy" type="button">😌 簡單</button>
+    <button class="diff-btn active" data-diff="normal" type="button">🙂 普通</button>
+    <button class="diff-btn" data-diff="hard" type="button">😈 困難</button>
+  </div>
+
   <div class="board" id="board"></div>
 
   <div class="controls">
@@ -564,9 +600,12 @@
     <div class="card">
       <h2>請輸入學號</h2>
       <div class="row">輸入後就開始 30 秒挑戰</div>
-      <div class="gate-hint">學號（例如：15　|　老師：0）</div>
+      <div class="gate-hint">學號（同學請輸入自己的學號）</div>
       <input class="gate-input" id="in-student" type="text" inputmode="numeric"
-             placeholder="例如：15" maxlength="20" autocomplete="off">
+             placeholder="同學：15　/　老師：0" maxlength="20" autocomplete="off">
+      <div style="font-size:0.85rem;color:#cf222e;font-weight:700;margin:0.3rem 0 0.2rem;">
+        👩‍🏫 老師請輸入 <span style="background:#fff8d8;padding:0.1rem 0.4rem;border-radius:6px;border:1px dashed #b8860b;">0</span>
+      </div>
       <div class="gate-hint">選擇難度</div>
       <div class="diff-row" id="diff-row-gate">
         <button class="diff-btn" data-diff="easy" type="button">😌 簡單</button>
@@ -681,6 +720,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/fireba
 import { getFirestore, collection, addDoc, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { firebaseConfig, SCORES_COLLECTION } from "./firebase-config.js";
+import { photoForStudent } from "./students.js";
 
 // === Firebase init ===
 let db = null;
@@ -724,9 +764,10 @@ let D = DIFFICULTIES[difficulty];
 let player = JSON.parse(localStorage.getItem('whack_v2_player') || 'null');
 
 function applyPlayerUI() {
-  if (!player) { $('who-chip').textContent = '—'; return; }
-  const emoji = pickEmoji(player.studentId);
-  $('who-chip').textContent = `${emoji} ${player.studentId}`;
+  const chip = $('who-chip');
+  if (!player) { chip.textContent = '—'; return; }
+  const photo = photoForStudent(player.studentId) || 'face-default.svg';
+  chip.innerHTML = `<img class="chip-photo" src="${photo}" alt="${player.studentId}"> ${player.studentId}`;
 }
 applyPlayerUI();
 
@@ -1042,7 +1083,13 @@ function end() {
   $('end-best').textContent = best;
   $('final-score').textContent = score;
   $('new-best').style.display = newBest ? 'inline' : 'none';
-  $('end-who').textContent = player ? `${pickEmoji(player.studentId)} 學號 ${player.studentId}` : '—';
+  const endWho = $('end-who');
+  if (player) {
+    const photo = photoForStudent(player.studentId) || 'face-default.svg';
+    endWho.innerHTML = `<img class="end-photo" src="${photo}" alt="${player.studentId}"><div>學號 ${player.studentId}</div>`;
+  } else {
+    endWho.textContent = '—';
+  }
   $('end-screen').classList.remove('hidden');
   uploadScore();
 }
