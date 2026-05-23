@@ -1,6 +1,6 @@
 # 🎯 打地鼠 v2 · 班級挑戰賽
 
-v1 的延伸版：玩家先輸入「班級 + 學號」才能開始，分數上傳到 Firebase Firestore，全班共享排行榜。
+v1 的延伸版：玩家先輸入「學號」才能開始，分數上傳到 Firebase Firestore，全班共享排行榜。
 
 > 跟 v1 的差異：v1 是「自己一個人玩、頭像是 head.png、分數存 localStorage」；v2 是「多人玩、頭像用 emoji（依學號決定）、分數存 Firestore、有公開排行榜」。
 > v1 還在原專案 `../whack-a-mole/`，**完全不動**。
@@ -82,9 +82,8 @@ Collection：`scores`
 
 | 欄位 | 型別 | 說明 |
 |------|------|------|
-| `className` | string (≤20) | 班級 |
 | `studentId` | string (≤20) | 學號 |
-| `emoji` | string | 依學號 hash 自動分配的頭像 |
+| `emoji` | string | 依學號 hash 自動分配的頭像（同學號永遠同 emoji） |
 | `score` | int (0–999) | 分數 |
 | `difficulty` | `easy` / `normal` / `hard` | 難度 |
 | `createdAt` | timestamp | 由 serverTimestamp 決定 |

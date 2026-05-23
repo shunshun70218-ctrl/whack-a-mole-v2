@@ -424,13 +424,10 @@
     <div class="card">
       <div class="avatar-emoji" id="gate-avatar">🎯</div>
       <h2>歡迎挑戰</h2>
-      <div class="row">請輸入你的班級和學號</div>
-
-      <div class="gate-label">班級</div>
-      <input class="gate-input" id="in-class" type="text" placeholder="例如：三年A班 / 7-2" maxlength="20" autocomplete="off">
+      <div class="row">請輸入你的學號</div>
 
       <div class="gate-label">學號</div>
-      <input class="gate-input" id="in-student" type="text" placeholder="例如：S001 / 25" maxlength="20" autocomplete="off">
+      <input class="gate-input" id="in-student" type="text" placeholder="例如：S001 / 25" maxlength="20" autocomplete="off" autofocus>
 
       <div class="gate-err" id="gate-err"></div>
       <button id="gate-confirm">✅ 確認進入</button>
@@ -592,8 +589,8 @@ function applyPlayerToUI() {
   $('start-avatar').textContent = emoji;
   $('end-avatar').textContent = emoji;
   $('who-chip').textContent = `${emoji} ${player.studentId}`;
-  $('start-who').textContent = `${player.className} · ${player.studentId}`;
-  $('end-who').textContent = `${player.className} · ${player.studentId}`;
+  $('start-who').textContent = `學號：${player.studentId}`;
+  $('end-who').textContent = `學號：${player.studentId}`;
 }
 
 function showGate() {
@@ -601,9 +598,9 @@ function showGate() {
   $('start-screen').classList.add('hidden');
   $('end-screen').classList.add('hidden');
   if (player) {
-    $('in-class').value = player.className || '';
     $('in-student').value = player.studentId || '';
   }
+  setTimeout(() => $('in-student').focus(), 50);
 }
 function showStart() {
   $('gate-screen').classList.add('hidden');
@@ -612,25 +609,19 @@ function showStart() {
 }
 
 $('gate-confirm').addEventListener('click', () => {
-  const className = $('in-class').value.trim();
   const studentId = $('in-student').value.trim();
-  if (!className) { $('gate-err').textContent = '請輸入班級'; return; }
   if (!studentId) { $('gate-err').textContent = '請輸入學號'; return; }
-  if (className.length > 20 || studentId.length > 20) {
-    $('gate-err').textContent = '欄位過長（≤20 字）'; return;
-  }
+  if (studentId.length > 20) { $('gate-err').textContent = '學號過長（≤20 字）'; return; }
   $('gate-err').textContent = '';
-  player = { className, studentId };
+  player = { studentId };
   localStorage.setItem('whack_v2_player', JSON.stringify(player));
   applyPlayerToUI();
   showStart();
 });
 
 // Enter to submit
-['in-class', 'in-student'].forEach(id => {
-  $(id).addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') $('gate-confirm').click();
-  });
+$('in-student').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') $('gate-confirm').click();
 });
 
 if (player) { applyPlayerToUI(); showStart(); } else { showGate(); }
@@ -815,7 +806,6 @@ async function uploadScore() {
   statusEl.className = 'upload-status';
   try {
     await addDoc(collection(db, SCORES_COLLECTION), {
-      className: player.className,
       studentId: player.studentId,
       emoji: pickEmoji(player.studentId),
       score,

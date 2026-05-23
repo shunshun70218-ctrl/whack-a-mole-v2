@@ -129,7 +129,6 @@
   }
 
   .id-cell { font-weight: 700; font-size: 1rem; }
-  .id-cell .class { display: block; font-size: 0.75rem; color: #6e7681; font-weight: 500; margin-top: 0.15rem; }
 
   .score-cell {
     font-weight: 900;
@@ -196,8 +195,6 @@
       <option value="normal">🙂 普通</option>
       <option value="hard">😈 困難</option>
     </select>
-    <label>班級</label>
-    <select id="filter-class"><option value="all">全部</option></select>
     <label>顯示</label>
     <select id="filter-top">
       <option value="50">前 50</option>
@@ -220,8 +217,19 @@ import { firebaseConfig, SCORES_COLLECTION } from "./firebase-config.js";
 
 const content = document.getElementById('content');
 const filterDiff  = document.getElementById('filter-diff');
-const filterClass = document.getElementById('filter-class');
 const filterTop   = document.getElementById('filter-top');
+
+// emoji 依學號 hash 決定（跟 index.html 一致）
+const EMOJI_POOL = ['🐹','🐰','🐻','🐼','🐨','🐯','🦁','🐸','🐵','🦊','🐺','🐮','🐷','🐶','🐱','🦝','🐭','🦥','🦦','🐢','🦔','🐧','🦄','🦓','🦒','🐔','🐤','🦉','🐙','🦋','🐝','🐳'];
+function hashStr(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+function pickEmoji(studentId) {
+  if (!studentId) return '🎯';
+  return EMOJI_POOL[hashStr(studentId) % EMOJI_POOL.length];
+}
 
 if (!firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("PASTE_")) {
   content.innerHTML = `<div class="err">⚠️ Firebase 尚未設定。請編輯 <code>firebase-config.js</code>，把 Firebase Console 的 config 貼進去。</div>`;
@@ -241,17 +249,11 @@ async function load() {
   content.innerHTML = `<div class="loading">⏳ 載入排行榜中…</div>`;
   try {
     const top = +filterTop.value || 50;
-    // 多抓一些以便前端做難度/班級篩選
+    // 多抓一些以便前端做難度篩選
     const q = query(collection(db, SCORES_COLLECTION), orderBy('score', 'desc'), orderBy('createdAt', 'asc'), limit(top * 5));
     const snap = await getDocs(q);
     allDocs = [];
     snap.forEach(doc => allDocs.push({ id: doc.id, ...doc.data() }));
-    // 收集班級到 dropdown
-    const classes = [...new Set(allDocs.map(d => d.className).filter(Boolean))].sort();
-    const cur = filterClass.value;
-    filterClass.innerHTML = '<option value="all">全部</option>' +
-      classes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-    if (classes.includes(cur)) filterClass.value = cur;
     render();
   } catch (e) {
     console.error(e);
@@ -261,11 +263,9 @@ async function load() {
 
 function render() {
   const diff = filterDiff.value;
-  const cls  = filterClass.value;
   const top  = +filterTop.value || 50;
   let rows = allDocs.slice();
   if (diff !== 'all') rows = rows.filter(r => r.difficulty === diff);
-  if (cls  !== 'all') rows = rows.filter(r => r.className === cls);
   rows = rows.slice(0, top);
 
   if (rows.length === 0) {
@@ -276,16 +276,17 @@ function render() {
   const trs = rows.map((r, i) => {
     const rank = i + 1;
     const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
-    const isMe = me && r.studentId === me.studentId && r.className === me.className;
+    const isMe = me && r.studentId === me.studentId;
     const diffCls = r.difficulty || 'normal';
+    // emoji 優先用 DB 裡的（向後相容），沒有就現場從學號 hash
+    const emoji = r.emoji || pickEmoji(r.studentId);
     return `
       <tr class="${isMe ? 'me' : ''}">
         <td class="rank rank-${rank}">${medal ? `<span class="medal">${medal}</span>` : rank}</td>
-        <td class="emoji-cell">${escapeHtml(r.emoji || '🎯')}</td>
+        <td class="emoji-cell">${escapeHtml(emoji)}</td>
         <td class="id-cell">
           ${escapeHtml(r.studentId || '?')}
           ${isMe ? ' <span style="color:var(--accent);font-size:0.75rem;">(你)</span>' : ''}
-          <span class="class">${escapeHtml(r.className || '')}</span>
         </td>
         <td class="score-cell">${r.score ?? 0}<span class="diff-badge ${diffCls}">${DIFF_LABEL[diffCls] || diffCls}</span></td>
       </tr>
@@ -314,7 +315,6 @@ function escapeHtml(s) {
 }
 
 filterDiff.addEventListener('change', render);
-filterClass.addEventListener('change', render);
 filterTop.addEventListener('change', load);
 document.getElementById('refresh').addEventListener('click', load);
 
