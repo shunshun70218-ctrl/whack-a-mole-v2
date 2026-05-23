@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>打地鼠 v2 · 班級挑戰賽</title>
+<title>秀朗 415 的大亂鬥！· 打地鼠 v2</title>
 <style>
   :root {
     --grass-dark: #4a8a3a;
@@ -62,8 +62,7 @@
   .chip .val { color: #d04317; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
   .chip.time .val { color: #2da44e; }
   .chip.best .val { color: #8957e5; }
-  .chip.diff .val { color: #0969da; font-size: 0.9rem; }
-  .chip.who .val { color: #1f6feb; font-size: 0.9rem; }
+  .chip.who .val { color: #1f6feb; font-size: 0.95rem; }
 
   .board {
     width: min(480px, 94vw);
@@ -116,7 +115,7 @@
     pointer-events: none;
     z-index: 1;
   }
-  .hole.up .mole-wrap { transform: translateY(0%); pointer-events: auto; }
+  .hole.up .mole-wrap { transform: translateY(10%); pointer-events: auto; }
   .hole.down .mole-wrap { transform: translateY(108%); transition-duration: .15s; }
 
   .chibi {
@@ -267,7 +266,21 @@
     box-shadow: 0 4px 0 #b3c5a0;
   }
   button.secondary:active { box-shadow: 0 2px 0 #b3c5a0; }
-  button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: 0 2px 0 #c47215; }
+  .link-btn {
+    background: white;
+    color: #2a4a1a;
+    padding: 0.65rem 1.4rem;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 4px 0 #b3c5a0;
+    transition: transform .1s, box-shadow .1s;
+    display: inline-flex;
+    align-items: center;
+  }
+  .link-btn:hover { transform: translateY(-1px); }
+  .link-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #b3c5a0; }
 
   .overlay {
     position: fixed;
@@ -285,13 +298,13 @@
   .card {
     background: white;
     border-radius: 18px;
-    padding: 1.6rem 1.8rem 1.8rem;
+    padding: 1.8rem 2rem;
     max-width: 90vw;
     width: 380px;
     text-align: center;
     box-shadow: 0 24px 60px rgba(0,0,0,0.4);
   }
-  .card h2 { margin: 0 0 0.4rem; font-size: 1.6rem; }
+  .card h2 { margin: 0 0 0.6rem; font-size: 1.6rem; }
   .card .big {
     font-size: 3rem;
     font-weight: 900;
@@ -299,25 +312,14 @@
     margin: 0.4rem 0;
     line-height: 1;
   }
-  .card .row { color: #57606a; margin: 0.35rem 0; font-size: 0.95rem; }
-  .card button { margin-top: 0.8rem; }
+  .card .row { color: #57606a; margin: 0.4rem 0; font-size: 0.95rem; }
+  .card button { margin-top: 1rem; }
   .new-best { color: #d62828; font-weight: 800; }
-
-  .avatar-emoji {
-    font-size: 5rem;
-    line-height: 1;
-    margin: 0.2rem auto 0.4rem;
-    animation: head-bounce .9s ease-in-out infinite;
-  }
-  @keyframes head-bounce {
-    0%, 100% { transform: translateY(0)   rotate(-3deg); }
-    50%      { transform: translateY(-8px) rotate(3deg); }
-  }
 
   .gate-input {
     width: 100%;
-    padding: 0.7rem 1rem;
-    font-size: 1.05rem;
+    padding: 0.75rem 1rem;
+    font-size: 1.2rem;
     border: 2px solid #d0d7de;
     border-radius: 12px;
     margin: 0.3rem 0;
@@ -325,13 +327,14 @@
     font-family: inherit;
     background: #fafbfc;
     transition: border-color .15s, background .15s;
+    font-variant-numeric: tabular-nums;
   }
   .gate-input:focus { outline: none; border-color: var(--accent); background: white; }
-  .gate-label {
+  .gate-hint {
     text-align: left;
     font-size: 0.8rem;
     color: #6e7681;
-    margin: 0.4rem 0 0.15rem;
+    margin: 0.5rem 0 0.15rem;
     font-weight: 600;
   }
   .gate-err {
@@ -340,44 +343,13 @@
     margin: 0.4rem 0 0;
     min-height: 1.2em;
   }
-
-  .diff-label { font-size: 0.82rem; color: #6e7681; margin: 0.6rem 0 0.35rem; font-weight: 600; }
-  .diff-row {
+  .gate-actions {
     display: flex;
-    gap: 0.4rem;
+    gap: 0.5rem;
     justify-content: center;
-    flex-wrap: wrap;
+    margin-top: 0.6rem;
   }
-  .diff-btn {
-    background: #f0f0f0;
-    color: #57606a;
-    border: 2px solid #d8dde3;
-    border-radius: 999px;
-    padding: 0.35rem 0.9rem;
-    font-size: 0.85rem;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: none;
-    margin-top: 0;
-    transition: all .12s;
-  }
-  .diff-btn:hover { transform: none; background: #e8e8e8; }
-  .diff-btn:active { transform: none; box-shadow: none; }
-  .diff-btn.active {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-    box-shadow: 0 3px 0 #c47215;
-  }
-
-  #confetti-canvas {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 200;
-    display: none;
-  }
-  #confetti-canvas.active { display: block; }
+  .gate-actions button { margin-top: 0; }
 
   .upload-status {
     font-size: 0.82rem;
@@ -387,28 +359,163 @@
   }
   .upload-status.ok { color: #2da44e; }
   .upload-status.err { color: #cf222e; }
+  .end-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 0.6rem;
+  }
+  .end-actions button, .end-actions .link-btn { margin-top: 0; }
 
-  footer { margin-top: 1rem; color: #2a4a1a; font-size: 0.85rem; text-align: center; opacity: 0.85; }
+  footer { margin-top: 1rem; color: #2a4a1a; font-size: 0.8rem; text-align: center; opacity: 0.8; }
+
+  .decor {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .decor svg { position: absolute; }
+  body > h1, body > .subtitle, body > .hud, body > .board, body > .controls, body > footer {
+    position: relative;
+    z-index: 1;
+  }
+
+  .sun {
+    top: 14px;
+    right: 18px;
+    width: clamp(60px, 9vw, 84px);
+    height: clamp(60px, 9vw, 84px);
+    animation: sun-spin 24s linear infinite;
+    filter: drop-shadow(0 4px 10px rgba(255,180,30,0.45));
+  }
+  @keyframes sun-spin { to { transform: rotate(360deg); } }
+
+  .cloud { opacity: 0.95; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.08)); }
+  .cloud-1 {
+    top: 80px; left: 4%;
+    width: clamp(90px, 14vw, 140px);
+    animation: cloud-drift-1 24s ease-in-out infinite;
+  }
+  .cloud-2 {
+    top: 170px; right: 6%;
+    width: clamp(70px, 11vw, 110px);
+    animation: cloud-drift-2 30s ease-in-out infinite;
+  }
+  @keyframes cloud-drift-1 {
+    0%, 100% { transform: translateX(0); }
+    50%      { transform: translateX(30px); }
+  }
+  @keyframes cloud-drift-2 {
+    0%, 100% { transform: translateX(0); }
+    50%      { transform: translateX(-26px); }
+  }
+
+  .butterfly {
+    width: 46px; height: 46px;
+    top: 50%; left: 8%;
+    animation: butterfly-fly 16s ease-in-out infinite;
+    transform-origin: 50% 50%;
+  }
+  .butterfly .wing {
+    transform-origin: 23px 23px;
+    animation: butterfly-flap 0.32s ease-in-out infinite alternate;
+  }
+  .butterfly .wing.right { animation-delay: 0s; }
+  .butterfly .wing.left  { transform: scaleX(-1); transform-origin: 23px 23px; }
+  @keyframes butterfly-flap {
+    from { transform: scaleX(1) rotateY(0deg); }
+    to   { transform: scaleX(1) rotateY(60deg); }
+  }
+  @keyframes butterfly-fly {
+    0%   { transform: translate(0, 0) rotate(-8deg); }
+    25%  { transform: translate(40px, -30px) rotate(6deg); }
+    50%  { transform: translate(120px, 10px) rotate(-4deg); }
+    75%  { transform: translate(50px, 50px) rotate(8deg); }
+    100% { transform: translate(0, 0) rotate(-8deg); }
+  }
 
   @media (max-width: 480px) {
+    .sun { width: 56px; height: 56px; top: 8px; right: 8px; }
+    .cloud-1 { top: 60px; width: 80px; }
+    .cloud-2 { top: 130px; width: 64px; }
+    .butterfly { width: 36px; height: 36px; }
     h1 { font-size: 1.3rem; }
-    .controls button { padding: 0.55rem 1rem; font-size: 0.9rem; }
-    .card { padding: 1.3rem 1.2rem; width: 340px; }
+    .controls button, .controls .link-btn { padding: 0.55rem 1rem; font-size: 0.9rem; }
+    .card { padding: 1.4rem 1.4rem; }
     .card .big { font-size: 2.4rem; }
-    .avatar-emoji { font-size: 4rem; }
   }
 </style>
 </head>
 <body>
-  <h1>🎯 打 地 鼠 🔨</h1>
-  <div class="subtitle">班級挑戰賽 · 30 秒衝高分</div>
+  <div class="decor" aria-hidden="true">
+    <svg class="sun" viewBox="0 0 80 80">
+      <g stroke="#ffb71c" stroke-width="4" stroke-linecap="round">
+        <line x1="40" y1="4"  x2="40" y2="14"/>
+        <line x1="40" y1="66" x2="40" y2="76"/>
+        <line x1="4"  y1="40" x2="14" y2="40"/>
+        <line x1="66" y1="40" x2="76" y2="40"/>
+        <line x1="14" y1="14" x2="21" y2="21"/>
+        <line x1="59" y1="59" x2="66" y2="66"/>
+        <line x1="14" y1="66" x2="21" y2="59"/>
+        <line x1="59" y1="21" x2="66" y2="14"/>
+      </g>
+      <circle cx="40" cy="40" r="20" fill="#ffd24a" stroke="#ffb71c" stroke-width="2"/>
+      <circle cx="33" cy="38" r="2.2" fill="#7a4a00"/>
+      <circle cx="47" cy="38" r="2.2" fill="#7a4a00"/>
+      <path d="M 32 44 Q 40 50 48 44" stroke="#7a4a00" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="30" cy="46" r="2" fill="#ff8da1" opacity="0.6"/>
+      <circle cx="50" cy="46" r="2" fill="#ff8da1" opacity="0.6"/>
+    </svg>
+    <svg class="cloud cloud-1" viewBox="0 0 110 60">
+      <ellipse cx="28" cy="36" rx="20" ry="14" fill="white"/>
+      <ellipse cx="55" cy="26" rx="22" ry="16" fill="white"/>
+      <ellipse cx="82" cy="34" rx="18" ry="13" fill="white"/>
+      <ellipse cx="55" cy="42" rx="38" ry="11" fill="white"/>
+    </svg>
+    <svg class="cloud cloud-2" viewBox="0 0 100 50">
+      <ellipse cx="25" cy="28" rx="18" ry="12" fill="white"/>
+      <ellipse cx="52" cy="22" rx="20" ry="14" fill="white"/>
+      <ellipse cx="76" cy="30" rx="16" ry="11" fill="white"/>
+      <ellipse cx="50" cy="36" rx="32" ry="9" fill="white"/>
+    </svg>
+    <svg class="butterfly" viewBox="0 0 46 46">
+      <ellipse cx="23" cy="23" rx="1.6" ry="9" fill="#3a2a1a"/>
+      <circle cx="23" cy="14" r="2.2" fill="#3a2a1a"/>
+      <path d="M 22 13 Q 19 8 16 7" stroke="#3a2a1a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <path d="M 24 13 Q 27 8 30 7" stroke="#3a2a1a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <circle cx="16" cy="7" r="1" fill="#3a2a1a"/>
+      <circle cx="30" cy="7" r="1" fill="#3a2a1a"/>
+      <g class="wing right">
+        <path d="M 23 18 Q 38 8 42 18 Q 42 24 32 24 Q 27 24 23 22 Z"
+              fill="#ff9ec7" stroke="#c54a8a" stroke-width="1.2"/>
+        <path d="M 23 24 Q 36 26 40 34 Q 38 40 30 38 Q 25 36 23 30 Z"
+              fill="#ffc7dc" stroke="#c54a8a" stroke-width="1.2"/>
+        <circle cx="35" cy="16" r="1.6" fill="#fff"/>
+        <circle cx="33" cy="32" r="1.4" fill="#fff"/>
+      </g>
+      <g class="wing left">
+        <path d="M 23 18 Q 38 8 42 18 Q 42 24 32 24 Q 27 24 23 22 Z"
+              fill="#ff9ec7" stroke="#c54a8a" stroke-width="1.2"/>
+        <path d="M 23 24 Q 36 26 40 34 Q 38 40 30 38 Q 25 36 23 30 Z"
+              fill="#ffc7dc" stroke="#c54a8a" stroke-width="1.2"/>
+        <circle cx="35" cy="16" r="1.6" fill="#fff"/>
+        <circle cx="33" cy="32" r="1.4" fill="#fff"/>
+      </g>
+    </svg>
+  </div>
+
+  <h1>🥊 秀朗 415 的大亂鬥！🔨</h1>
+  <div class="subtitle">30 秒挑戰！看到同學就打，連擊有獎勵！</div>
 
   <div class="hud">
-    <div class="chip who"><span class="label">玩家</span><span class="val" id="who-chip">—</span></div>
+    <div class="chip who"><span class="label">學號</span><span class="val" id="who-chip">—</span></div>
     <div class="chip"><span class="label">分數</span><span class="val" id="score">0</span></div>
     <div class="chip time"><span class="label">剩餘</span><span class="val" id="time">30</span><span style="font-size:0.8rem;color:#57606a;">秒</span></div>
+    <div class="chip best"><span class="label">最高</span><span class="val" id="best">0</span></div>
     <div class="chip"><span class="label">連擊</span><span class="val" id="combo" style="color:#0969da;">0</span></div>
-    <div class="chip diff"><span class="label">難度</span><span class="val" id="diff-chip">普通</span></div>
   </div>
 
   <div class="board" id="board"></div>
@@ -416,68 +523,44 @@
   <div class="controls">
     <button id="start">▶️ 開始遊戲</button>
     <button id="sound" class="secondary">🔊 音效：開</button>
-    <a href="leaderboard.html"><button class="secondary" type="button">🏆 排行榜</button></a>
+    <button id="music" class="secondary">🎵 音樂：開</button>
+    <a href="all.html" class="link-btn">💖 看小美女</a>
+    <a href="leaderboard.html" class="link-btn">🏆 排行版</a>
   </div>
 
-  <!-- Gate：學號輸入 -->
-  <div class="overlay" id="gate-screen">
+  <!-- Gate：開始遊戲時跳出，要求輸入學號 -->
+  <div class="overlay hidden" id="gate-screen">
     <div class="card">
-      <div class="avatar-emoji" id="gate-avatar">🎯</div>
-      <h2>歡迎挑戰</h2>
-      <div class="row">請輸入你的學號</div>
-
-      <div class="gate-label">學號</div>
-      <input class="gate-input" id="in-student" type="text" placeholder="例如：S001 / 25" maxlength="20" autocomplete="off" autofocus>
-
+      <h2>請輸入學號</h2>
+      <div class="row">輸入後就開始 30 秒挑戰</div>
+      <div class="gate-hint">學號（例如：15）</div>
+      <input class="gate-input" id="in-student" type="text" inputmode="numeric"
+             placeholder="例如：15" maxlength="20" autocomplete="off">
       <div class="gate-err" id="gate-err"></div>
-      <button id="gate-confirm">✅ 確認進入</button>
-    </div>
-  </div>
-
-  <!-- 開始畫面 -->
-  <div class="overlay hidden" id="start-screen">
-    <div class="card">
-      <div class="avatar-emoji" id="start-avatar">🎯</div>
-      <h2>準備好了嗎？</h2>
-      <div class="row" id="start-who">—</div>
-      <div class="row">30 秒內盡量打中冒出的地鼠</div>
-      <div class="row">連擊 3 次以上有 +1 額外分數</div>
-
-      <div class="diff-label">選擇難度</div>
-      <div class="diff-row" id="diff-row-start">
-        <button class="diff-btn" data-diff="easy">😌 簡單</button>
-        <button class="diff-btn active" data-diff="normal">🙂 普通</button>
-        <button class="diff-btn" data-diff="hard">😈 困難</button>
+      <div class="gate-actions">
+        <button id="gate-cancel" class="secondary">取消</button>
+        <button id="gate-confirm">▶️ 開始</button>
       </div>
-
-      <button id="start-2">▶️ 開始遊戲</button>
-      <button id="change-user" class="secondary" style="margin-left:0.4rem;">👤 換玩家</button>
     </div>
   </div>
 
   <!-- 結束畫面 -->
   <div class="overlay hidden" id="end-screen">
     <div class="card">
-      <div class="avatar-emoji" id="end-avatar">🎯</div>
       <h2 id="end-title">時間到！</h2>
-      <div class="row" id="end-comment">你的分數</div>
-      <div class="big" id="final-score">0</div>
       <div class="row" id="end-who">—</div>
-      <div class="upload-status" id="upload-status">上傳分數中…</div>
-
-      <div class="diff-label">下一場難度</div>
-      <div class="diff-row" id="diff-row-end">
-        <button class="diff-btn" data-diff="easy">😌 簡單</button>
-        <button class="diff-btn active" data-diff="normal">🙂 普通</button>
-        <button class="diff-btn" data-diff="hard">😈 困難</button>
+      <div class="row">你的分數</div>
+      <div class="big" id="final-score">0</div>
+      <div class="row">最高分：<span id="end-best">0</span> <span id="new-best" class="new-best" style="display:none;">🎉 新紀錄！</span></div>
+      <div class="upload-status" id="upload-status">⏳ 上傳分數中…</div>
+      <div class="end-actions">
+        <button id="restart">🔄 再玩一次</button>
+        <a href="leaderboard.html" class="link-btn">🏆 排行版</a>
       </div>
-
-      <button id="restart">🔄 再玩一次</button>
-      <a href="leaderboard.html"><button class="secondary" type="button">🏆 排行榜</button></a>
     </div>
   </div>
 
-  <!-- 共用 SVG：Q 版身體 + emoji 頭 -->
+  <!-- 共用 SVG：Q 版身體 + 真人頭像 -->
   <svg width="0" height="0" style="position:absolute;">
     <defs>
       <symbol id="chibi" viewBox="0 0 160 240">
@@ -495,11 +578,24 @@
         <path d="M 38 128 Q 32 152 38 178 Q 60 184 80 184 Q 100 184 122 178 Q 128 152 122 128 Q 102 138 80 138 Q 58 138 38 128 Z"
               fill="#ffffff" stroke="#3a1a08" stroke-width="2"/>
         <path d="M 70 128 Q 80 140 90 128" fill="none" stroke="#d04317" stroke-width="2"/>
+        <text x="80" y="172"
+              font-family="-apple-system, 'PingFang TC', 'Microsoft JhengHei', 'Heiti TC', sans-serif"
+              font-size="26" font-weight="900" letter-spacing="3"
+              fill="#d04317" stroke="#7a2a08" stroke-width="0.7" paint-order="stroke"
+              text-anchor="middle">秀朗</text>
+        <text x="80" y="183"
+              font-family="-apple-system, 'PingFang TC', 'Microsoft JhengHei', sans-serif"
+              font-size="7" font-weight="800" letter-spacing="1"
+              fill="#3a1a08" text-anchor="middle">4年15班</text>
         <g>
+          <path d="M 38 130 Q 22 116 18 92" stroke="#f5d5b5" stroke-width="11" stroke-linecap="round" fill="none"/>
+          <path d="M 38 130 Q 22 116 18 92" stroke="#a07050" stroke-width="11.5" stroke-linecap="round" fill="none" opacity="0.25"/>
           <path d="M 38 130 Q 22 116 18 92" stroke="#f5d5b5" stroke-width="10" stroke-linecap="round" fill="none"/>
           <circle cx="18" cy="90" r="9" fill="#f5d5b5" stroke="#a07050" stroke-width="1.8"/>
           <line x1="13" y1="86" x2="9"  y2="68" stroke="#f5d5b5" stroke-width="5" stroke-linecap="round"/>
+          <line x1="13" y1="86" x2="9"  y2="68" stroke="#a07050" stroke-width="5.5" stroke-linecap="round" opacity="0.2"/>
           <line x1="22" y1="86" x2="26" y2="68" stroke="#f5d5b5" stroke-width="5" stroke-linecap="round"/>
+          <line x1="22" y1="86" x2="26" y2="68" stroke="#a07050" stroke-width="5.5" stroke-linecap="round" opacity="0.2"/>
         </g>
         <g>
           <path d="M 122 130 Q 138 132 145 148" stroke="#f5d5b5" stroke-width="10" stroke-linecap="round" fill="none"/>
@@ -511,14 +607,14 @@
                 fill="#fff8dc" stroke="#c4a574" stroke-width="2"/>
           <path d="M 140 134 Q 146 130 152 134" fill="none" stroke="#e8d5a0" stroke-width="1.5"/>
         </g>
-        <circle cx="80" cy="62" r="60" fill="#ffe6b3" stroke="#3a2a1a" stroke-width="2.5"/>
-        <text id="emoji-slot" x="80" y="88" text-anchor="middle" font-size="86"
-              style="font-family: -apple-system, 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;">🐹</text>
+        <circle cx="80" cy="62" r="60" fill="#f5d5b5" stroke="#3a2a1a" stroke-width="2.5"/>
       </symbol>
+      <clipPath id="headClipPath">
+        <circle cx="80" cy="62" r="58"/>
+      </clipPath>
     </defs>
   </svg>
 
-  <!-- 錘子游標 -->
   <div class="hammer" id="hammer" aria-hidden="true">
     <svg viewBox="0 0 60 60" width="60" height="60">
       <g>
@@ -539,10 +635,8 @@
     </svg>
   </div>
 
-  <canvas id="confetti-canvas"></canvas>
-
   <footer>
-    Made with Claude Code · v2 班級挑戰賽
+    秀朗 415 班專屬版 v2 · 學號挑戰 + 班級排行榜 · Made with Claude Code × GitHub Pages
   </footer>
 
 <script type="module">
@@ -564,7 +658,7 @@ try {
   console.warn("Firebase init failed:", e);
 }
 
-// === Emoji pool（依學號 hash 決定）===
+// === Emoji 頭像（依學號 hash 決定，用於排行榜識別）===
 const EMOJI_POOL = ['🐹','🐰','🐻','🐼','🐨','🐯','🦁','🐸','🐵','🦊','🐺','🐮','🐷','🐶','🐱','🦝','🐭','🦥','🦦','🐢','🦔','🐧','🦄','🦓','🦒','🐔','🐤','🦉','🐙','🦋','🐝','🐳'];
 function hashStr(s) {
   let h = 0;
@@ -576,76 +670,78 @@ function pickEmoji(studentId) {
   return EMOJI_POOL[hashStr(studentId) % EMOJI_POOL.length];
 }
 
-// === Player state ===
+// === DOM helpers ===
+const $ = id => document.getElementById(id);
+
+// === Player state（學號）===
 let player = JSON.parse(localStorage.getItem('whack_v2_player') || 'null');
 
-function $(id) { return document.getElementById(id); }
-
-function applyPlayerToUI() {
-  if (!player) return;
+function applyPlayerUI() {
+  if (!player) { $('who-chip').textContent = '—'; return; }
   const emoji = pickEmoji(player.studentId);
-  $('emoji-slot').textContent = emoji;
-  $('gate-avatar').textContent = emoji;
-  $('start-avatar').textContent = emoji;
-  $('end-avatar').textContent = emoji;
   $('who-chip').textContent = `${emoji} ${player.studentId}`;
-  $('start-who').textContent = `學號：${player.studentId}`;
-  $('end-who').textContent = `學號：${player.studentId}`;
 }
+applyPlayerUI();
 
-function showGate() {
+// === Gate ===
+function openGate() {
+  $('gate-err').textContent = '';
+  $('in-student').value = player ? player.studentId : '';
   $('gate-screen').classList.remove('hidden');
-  $('start-screen').classList.add('hidden');
-  $('end-screen').classList.add('hidden');
-  if (player) {
-    $('in-student').value = player.studentId || '';
-  }
-  setTimeout(() => $('in-student').focus(), 50);
+  setTimeout(() => { $('in-student').focus(); $('in-student').select(); }, 50);
 }
-function showStart() {
-  $('gate-screen').classList.add('hidden');
-  $('start-screen').classList.remove('hidden');
-  $('end-screen').classList.add('hidden');
-}
+function closeGate() { $('gate-screen').classList.add('hidden'); }
 
+$('gate-cancel').addEventListener('click', closeGate);
 $('gate-confirm').addEventListener('click', () => {
   const studentId = $('in-student').value.trim();
   if (!studentId) { $('gate-err').textContent = '請輸入學號'; return; }
   if (studentId.length > 20) { $('gate-err').textContent = '學號過長（≤20 字）'; return; }
-  $('gate-err').textContent = '';
   player = { studentId };
   localStorage.setItem('whack_v2_player', JSON.stringify(player));
-  applyPlayerToUI();
-  showStart();
+  applyPlayerUI();
+  closeGate();
+  start();
 });
-
-// Enter to submit
 $('in-student').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') $('gate-confirm').click();
+  if (e.key === 'Escape') closeGate();
 });
 
-if (player) { applyPlayerToUI(); showStart(); } else { showGate(); }
-
-$('change-user').addEventListener('click', showGate);
-
-// ====== 以下沿用 v1 遊戲邏輯（去除 localStorage best，改成上傳 Firestore）======
-
+// ========== 遊戲核心邏輯（沿用 v1） ==========
 const HOLES = 9;
 const ROUND_MS = 30000;
-
-const DIFFICULTIES = {
-  easy:   { label: '😌 簡單', minInt: 500, maxInt: 1100, minLife: 900, maxLife: 1400, maxConc: 1, scoreGoal: 18 },
-  normal: { label: '🙂 普通', minInt: 320, maxInt: 850,  minLife: 600, maxLife: 1100, maxConc: 2, scoreGoal: 28 },
-  hard:   { label: '😈 困難', minInt: 220, maxInt: 600,  minLife: 420, maxLife: 800,  maxConc: 3, scoreGoal: 40 },
-};
-let difficulty = localStorage.getItem('whack_v2_diff') || 'normal';
-if (!DIFFICULTIES[difficulty]) difficulty = 'normal';
-let D = DIFFICULTIES[difficulty];
+const MIN_INTERVAL = 320, MAX_INTERVAL = 850;
+const MIN_LIFETIME = 600, MAX_LIFETIME = 1100;
+const MAX_CONCURRENT = 2;
 
 const board = $('board');
+
+const FACES = [
+  'face-01.jpg', 'face-02.jpg', 'face-03.jpg', 'face-04.jpg',
+  'face-05.jpg', 'face-06.jpg', 'face-07.jpg', 'face-08.jpg',
+  'face-09.jpg', 'face-10.jpg', 'face-11.jpg', 'face-12.jpg',
+  'face-13.jpg', 'face-14.jpg'
+];
+let faceBag = [];
+function nextFace() {
+  if (faceBag.length === 0) {
+    faceBag = FACES.slice();
+    for (let i = faceBag.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [faceBag[i], faceBag[j]] = [faceBag[j], faceBag[i]];
+    }
+  }
+  return faceBag.shift();
+}
+
 const chibiSvg = `
   <svg class="chibi" viewBox="0 0 160 240" xmlns="http://www.w3.org/2000/svg">
     <use href="#chibi"/>
+    <image class="face-img" x="18" y="2" width="124" height="124"
+           clip-path="url(#headClipPath)" preserveAspectRatio="xMidYMid slice"/>
+    <ellipse cx="50" cy="80" rx="9" ry="5" fill="#ff8da1" opacity="0.45"/>
+    <ellipse cx="110" cy="80" rx="9" ry="5" fill="#ff8da1" opacity="0.45"/>
   </svg>`;
 
 const holes = [];
@@ -671,6 +767,7 @@ for (let i = 0; i < HOLES; i++) {
   holes.push(h);
 }
 
+// 錘子游標
 const hammer = $('hammer');
 hammer.style.left = (window.innerWidth / 2) + 'px';
 hammer.style.top  = (window.innerHeight / 2) + 'px';
@@ -685,13 +782,16 @@ document.addEventListener('mousedown', () => {
 document.addEventListener('mouseleave', () => hammer.style.opacity = '0');
 document.addEventListener('mouseenter', () => hammer.style.opacity = '1');
 
-let score = 0, combo = 0;
+// state
+let score = 0, combo = 0, best = +(localStorage.getItem('whack_v2_best') || 0);
 let timeLeft = ROUND_MS / 1000;
 let active = new Map();
 let running = false;
 let spawnTimer = null, countdownTimer = null, endAt = 0;
 let soundOn = true;
-$('diff-chip').textContent = D.label;
+let musicOn = true;
+let bgmTimer = null, bgmIndex = 0;
+$('best').textContent = best;
 
 let audioCtx = null;
 function beep(freq, duration = 0.06, type = 'square', vol = 0.18) {
@@ -709,24 +809,60 @@ function beep(freq, duration = 0.06, type = 'square', vol = 0.18) {
   } catch (e) {}
 }
 
+// 8-bit BGM
+const BGM_MELODY = [
+  523.25, 659.25, 783.99, 1046.50, 783.99, 659.25, 523.25, 659.25,
+  698.46, 880.00, 1046.50, 1396.91, 1046.50, 880.00, 698.46, 880.00,
+  783.99, 987.77, 1174.66, 1567.98, 1174.66, 987.77, 783.99, 987.77,
+  523.25, 659.25, 783.99, 1046.50, 783.99, 659.25, 523.25, 659.25,
+];
+const BGM_BASS = [130.81, 174.61, 196.00, 130.81];
+
+function bgmTone(freq, duration, type, vol) {
+  if (!musicOn) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.value = vol;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    o.stop(audioCtx.currentTime + duration);
+  } catch (e) {}
+}
+function bgmStep() {
+  if (!musicOn || !running) { bgmTimer = null; return; }
+  bgmTone(BGM_MELODY[bgmIndex], 0.18, 'triangle', 0.05);
+  if (bgmIndex % 8 === 0) bgmTone(BGM_BASS[(bgmIndex / 8) | 0], 0.55, 'sawtooth', 0.035);
+  bgmIndex = (bgmIndex + 1) % BGM_MELODY.length;
+  const tempo = timeLeft <= 10 ? 140 : 220;
+  bgmTimer = setTimeout(bgmStep, tempo);
+}
+function startBgm() { stopBgm(); bgmIndex = 0; bgmStep(); }
+function stopBgm() { if (bgmTimer) { clearTimeout(bgmTimer); bgmTimer = null; } }
+
 function spawn() {
   if (!running) return;
-  if (active.size < D.maxConc) {
+  if (active.size < MAX_CONCURRENT) {
     const free = holes.map((_, i) => i).filter(i => !active.has(i));
     if (free.length) {
       const idx = free[Math.floor(Math.random() * free.length)];
       const elapsed = (ROUND_MS - (endAt - performance.now())) / ROUND_MS;
-      const life = Math.max(D.minLife, D.maxLife - elapsed * (D.maxLife - D.minLife) * 0.5);
+      const life = Math.max(MIN_LIFETIME, MAX_LIFETIME - elapsed * 500);
       showMole(idx, life);
     }
   }
-  const interval = D.minInt + Math.random() * (D.maxInt - D.minInt);
+  const interval = MIN_INTERVAL + Math.random() * (MAX_INTERVAL - MIN_INTERVAL);
   spawnTimer = setTimeout(spawn, interval);
 }
 
 function showMole(idx, lifetimeMs) {
   const h = holes[idx];
   h.classList.remove('down', 'hit', 'combo');
+  const faceImg = h.querySelector('.face-img');
+  if (faceImg) faceImg.setAttribute('href', nextFace());
   h.classList.add('up');
   const t = setTimeout(() => hideMole(idx, false), lifetimeMs);
   active.set(idx, { hidTimer: t });
@@ -768,18 +904,17 @@ function onHit(idx) {
 }
 
 function start() {
-  if (!player) { showGate(); return; }
   score = 0; combo = 0;
+  faceBag = [];
   timeLeft = ROUND_MS / 1000;
   $('score').textContent = 0;
   $('combo').textContent = 0;
   $('time').textContent = timeLeft;
-  $('start-screen').classList.add('hidden');
   $('end-screen').classList.add('hidden');
-  stopConfetti();
   running = true;
   endAt = performance.now() + ROUND_MS;
   if (!audioCtx) try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+  if (musicOn) startBgm();
   spawn();
   countdownTimer = setInterval(() => {
     const left = Math.max(0, Math.ceil((endAt - performance.now()) / 1000));
@@ -793,8 +928,13 @@ function start() {
 async function uploadScore() {
   const statusEl = $('upload-status');
   if (!firebaseReady) {
-    statusEl.textContent = '⚠️ Firebase 未設定，分數沒上傳（請編輯 firebase-config.js）';
+    statusEl.textContent = '⚠️ Firebase 未設定，分數沒上傳';
     statusEl.className = 'upload-status err';
+    return;
+  }
+  if (!player) {
+    statusEl.textContent = '（沒有學號，不上傳）';
+    statusEl.className = 'upload-status';
     return;
   }
   if (score <= 0) {
@@ -809,7 +949,7 @@ async function uploadScore() {
       studentId: player.studentId,
       emoji: pickEmoji(player.studentId),
       score,
-      difficulty,
+      difficulty: 'normal',
       createdAt: serverTimestamp(),
     });
     statusEl.textContent = '✅ 分數已上傳到排行榜';
@@ -823,136 +963,39 @@ async function uploadScore() {
 
 function end() {
   running = false;
+  stopBgm();
   if (spawnTimer) clearTimeout(spawnTimer);
   if (countdownTimer) clearInterval(countdownTimer);
   for (const idx of [...active.keys()]) hideMole(idx, false);
   beep(523, 0.12, 'sine', 0.18);
   setTimeout(() => beep(392, 0.18, 'sine', 0.16), 130);
-
-  $('final-score').textContent = score;
-
-  const endAvatar = $('end-avatar');
-  const endComment = $('end-comment');
-  const isHigh = score >= D.scoreGoal;
-  if (isHigh) {
-    $('end-title').textContent = '🎉 厲害！';
-    endComment.textContent = '高分達成！你的分數是';
-    launchConfetti();
-    setTimeout(() => beep(784, 0.15, 'sine', 0.2), 250);
-    setTimeout(() => beep(988, 0.15, 'sine', 0.2), 420);
-    setTimeout(() => beep(1175, 0.25, 'sine', 0.2), 600);
-  } else if (score === 0) {
-    $('end-title').textContent = '咦…';
-    endComment.textContent = '一隻都沒打到？再來一次！';
-  } else {
-    $('end-title').textContent = '時間到！';
-    endComment.textContent = '你的分數';
+  const newBest = score > best;
+  if (newBest) {
+    best = score;
+    localStorage.setItem('whack_v2_best', best);
   }
-
+  $('best').textContent = best;
+  $('end-best').textContent = best;
+  $('final-score').textContent = score;
+  $('new-best').style.display = newBest ? 'inline' : 'none';
+  $('end-who').textContent = player ? `${pickEmoji(player.studentId)} 學號 ${player.studentId}` : '—';
   $('end-screen').classList.remove('hidden');
   uploadScore();
 }
 
-function setDifficulty(d) {
-  if (!DIFFICULTIES[d]) return;
-  difficulty = d;
-  D = DIFFICULTIES[d];
-  localStorage.setItem('whack_v2_diff', d);
-  document.querySelectorAll('.diff-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.diff === d);
-  });
-  $('diff-chip').textContent = D.label;
-}
-document.querySelectorAll('.diff-btn').forEach(b => {
-  b.addEventListener('click', () => setDifficulty(b.dataset.diff));
-});
-document.querySelectorAll('.diff-btn').forEach(b => {
-  b.classList.toggle('active', b.dataset.diff === difficulty);
-});
-
-const confetti = $('confetti-canvas');
-const cctx = confetti.getContext('2d');
-let confettiParticles = [];
-let confettiRaf = null, confettiStart = 0, confettiDuration = 3500;
-
-function resizeConfetti() {
-  confetti.width = window.innerWidth;
-  confetti.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeConfetti);
-resizeConfetti();
-
-function launchConfetti() {
-  confetti.classList.add('active');
-  confettiParticles = [];
-  confettiStart = performance.now();
-  const COLORS = ['#ff3b30','#ff9c1c','#ffd400','#2da44e','#0969da','#8957e5','#ff8da1'];
-  const launchPoints = [
-    { x: window.innerWidth * 0.15, y: window.innerHeight * 0.85, vx: 6,  vy: -16 },
-    { x: window.innerWidth * 0.85, y: window.innerHeight * 0.85, vx: -6, vy: -16 },
-    { x: window.innerWidth * 0.50, y: window.innerHeight * 0.95, vx: 0,  vy: -19 },
-  ];
-  for (const lp of launchPoints) {
-    for (let i = 0; i < 80; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 4 + Math.random() * 10;
-      confettiParticles.push({
-        x: lp.x + (Math.random() - 0.5) * 30,
-        y: lp.y + (Math.random() - 0.5) * 20,
-        vx: lp.vx + Math.cos(angle) * speed * 0.6,
-        vy: lp.vy + Math.sin(angle) * speed * 0.4,
-        w: 6 + Math.random() * 8,
-        h: 10 + Math.random() * 6,
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        rot: Math.random() * Math.PI,
-        vr:  (Math.random() - 0.5) * 0.4,
-        life: 1,
-      });
-    }
-  }
-  if (confettiRaf) cancelAnimationFrame(confettiRaf);
-  confettiRaf = requestAnimationFrame(drawConfetti);
-}
-
-function drawConfetti(t) {
-  const elapsed = t - confettiStart;
-  cctx.clearRect(0, 0, confetti.width, confetti.height);
-  let alive = 0;
-  for (const p of confettiParticles) {
-    p.vy += 0.35;
-    p.vx *= 0.992;
-    p.x += p.vx;
-    p.y += p.vy;
-    p.rot += p.vr;
-    if (elapsed > confettiDuration - 800) p.life = Math.max(0, p.life - 0.04);
-    if (p.y < confetti.height + 40 && p.life > 0) alive++;
-    cctx.save();
-    cctx.globalAlpha = p.life;
-    cctx.translate(p.x, p.y);
-    cctx.rotate(p.rot);
-    cctx.fillStyle = p.color;
-    cctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-    cctx.restore();
-  }
-  if (alive > 0 && elapsed < confettiDuration) {
-    confettiRaf = requestAnimationFrame(drawConfetti);
-  } else {
-    stopConfetti();
-  }
-}
-
-function stopConfetti() {
-  if (confettiRaf) { cancelAnimationFrame(confettiRaf); confettiRaf = null; }
-  cctx.clearRect(0, 0, confetti.width, confetti.height);
-  confetti.classList.remove('active');
-}
-
-$('start').addEventListener('click', start);
-$('start-2').addEventListener('click', start);
-$('restart').addEventListener('click', start);
+$('start').addEventListener('click', openGate);
+$('restart').addEventListener('click', openGate);
 $('sound').addEventListener('click', () => {
   soundOn = !soundOn;
   $('sound').textContent = soundOn ? '🔊 音效：開' : '🔇 音效：關';
+});
+$('music').addEventListener('click', () => {
+  musicOn = !musicOn;
+  $('music').textContent = musicOn ? '🎵 音樂：開' : '🎵 音樂：關';
+  if (running) {
+    if (musicOn) startBgm();
+    else stopBgm();
+  }
 });
 </script>
 </body>
