@@ -1,4 +1,4 @@
-// === Firestore Security Rules（複製到 Firebase Console → Firestore → 規則）===
+// === Firestore Security Rules ===
 //
 // 設計原則：
 // - scores 任何人可以讀（排行榜公開）
